@@ -50,23 +50,33 @@ module.exports =
             } else
                 this.sortFields.push(this.makeSortField(fieldNames));
         }
+        
         addSearchKey(keyName, value) {
-            let name = utilities.capitalizeFirstLetter(keyName.toLowerCase());
-            this.searchKeys.push({ name: name, value: value });
+            this.searchKeys.push({ name: keyName, value: value });
         }
         valueMatch(value, searchValue) {
             try {
-                return new RegExp('^' + searchValue.toLowerCase().replace(/\*/g, '.*') + '$').test(value.toLowerCase());
+                return new RegExp('^' + searchValue.toLowerCase().replace(/\*/g, '.*') + '$').test(value.toString().toLowerCase());
             } catch (error) {
                 console.log(error);
                 return false;
             }
         }
+        
         itemMatch(item) {
             for (let key of this.searchKeys) {
                 if (key.name in item) {
-                    if (!this.valueMatch(item[key.name], key.value))
-                        return false;
+                    if (!Array.isArray(key.value)){
+                        if (!this.valueMatch(item[key.name], key.value))
+                            return false;
+                    } else {
+                        let allMatch = true;
+                        for(let value of key.value) {
+                            if (!this.valueMatch(item[key.name],value))
+                                allMatch = false;
+                        }
+                        return allMatch;
+                    }
                 } else
                     return false;
             }
